@@ -1,7 +1,7 @@
 from copy import deepcopy
 from enum import Enum
 import random 
-import matplotlib.pyplot as plt 
+#import matplotlib.pyplot as plt 
 from scipy import stats
 
 
@@ -195,6 +195,24 @@ def WriteDataToFile(Boards,Moves,infile):
 
 		f.write('\r\n')	
 
+def WriteDataToFileV2(Boards,Moves,infile):
+	with open(infile,'a') as f:
+
+		for j in range(0,len(Boards)):
+			for element in Boards[j]:
+				f.write('%s'%element)
+				f.write(',')
+
+			for i in range(0,len(Moves[j])):
+
+				if i != len(Moves[j])-1:
+
+					f.write('%s'%Moves[j][i])
+					f.write(',')
+				else:
+					f.write('%s'%Moves[j][i])
+			f.write('\r\n')
+		f.write('\r\n')
 
 
 
@@ -205,7 +223,7 @@ def training_games():
 
 	Scores = [] #used for identifying frequency of scores 
 
-	for game in range(0,100000):	# start loop here 
+	for game in range(0,1000):	# start loop here 
 
 		ThisGameMoves = [] #hold an array of all the moves used in a game. write to file if the game was good
 		ThisGameBoard = [] #hold an array of the state of the board per turn. write to file if the game was good
@@ -220,7 +238,7 @@ def training_games():
 
 				if score <= 8:#if the score is less than 10 it is concidered a good game! 
 
-					WriteDataToFile(ThisGameBoard,ThisGameMoves,'training_dataV1.txt')
+					WriteDataToFileV2(ThisGameBoard,ThisGameMoves,'training_dataV2.txt')
 				break
 
 			RandomMove = random.randint(0,len(AvailableMoves)-1)#select a random move from the avaliable moves 
@@ -238,7 +256,11 @@ def training_games():
 
 
 
-training_games()
+#training_games()
+
+
+
+
 
 
 
