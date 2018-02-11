@@ -8,6 +8,7 @@ from scipy import stats
 
 
 
+
 '''
 enumeration for easy reading of moves 
 '''
