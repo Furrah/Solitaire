@@ -1,5 +1,7 @@
 import numpy as np 
 from Solitaire import LoadBoard,GameCoordinates
+from collections import defaultdict
+
 indata = open('training_dataV2.txt','r').read()
 
 
@@ -36,11 +38,20 @@ Coords = GameCoordinates(Board) #find all possible coorindates with a direction 
 
 values = [i for i in range(73)]
 
-test_dict = dict(zip(values,Coords))
-test_dict2 = dict(zip(Coords,values))
+Coords = tuple(Coords)
+
+coord_to_hot = defaultdict(list)
+
+for i in range(0,len(Coords)):
+	coord_to_hot[tuple(Coords[i])].append(i)
 
 
+label_to_hot = []
 
-#one_hot = np.eye(73)[test_dict2[label]]
+for value in label:
+	label_to_hot.append(coord_to_hot[tuple(value)])
+
+one_hot = np.eye(73)[label_to_hot]
+
 
 
