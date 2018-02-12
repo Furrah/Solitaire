@@ -1,11 +1,15 @@
 import numpy as np 
 from Solitaire import LoadBoard,GameCoordinates
 from collections import defaultdict
+import sys
 
 indata = open('training_dataV2.txt','r').read()
 
+if sys.platform.startswith('darwin'):
+	indata = indata.split('\r\n')
 
-indata = indata.split('\r\n')
+elif sys.platform.startswith('win'):
+	indata = indata.split('\n\n')
 
 
 board_data = []
@@ -15,7 +19,7 @@ label = []
 for eachline in indata:
 
 
-	if len(eachline)>0:
+	if len(eachline)>1:
 		data = eachline.split(',')
 
 		tempData = []
@@ -30,6 +34,7 @@ for eachline in indata:
 		label.append(tempLabel)
 
 board_data = np.array(board_data,dtype = int)
+
 label = np.array(label,dtype = int)
 
 
