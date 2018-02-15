@@ -3,7 +3,7 @@ from enum import Enum
 import random 
 #import matplotlib.pyplot as plt 
 from scipy import stats
-
+import tensorflow as tf 
 
 
 
@@ -139,7 +139,7 @@ def ScoreTrainingGame(Board):
 
 	return Score 
 
-				
+#once a move has been selected, TakeMove changes the state of the board to reflect chosen move.				
 def TakeMove(Board,Move):
 
 	y = Move[0]
@@ -168,6 +168,7 @@ def TakeMove(Board,Move):
 
 	return Board
 
+#ReshapeBoard takes the 2d board and turns it into a 1d array
 def ReshapeBoard(Board):
 
 	flattenedBoard = []
@@ -178,6 +179,7 @@ def ReshapeBoard(Board):
 
 	return flattenedBoard
 
+#during training score selection a frequency distribution was required to see what the average game score was 
 def PlotFrequencyDistribution(Scores):
 	frequency = stats.itemfreq(Scores)
 	plt.plot(frequency[:,0],frequency[:,1])
@@ -185,7 +187,7 @@ def PlotFrequencyDistribution(Scores):
 	plt.ylabel('Frequency')
 	plt.show()
 
-
+#writes the board and move data to file as [x,x,x...x],[y,y,y] where x is the state of a position on the board and y is the move and direction
 def WriteDataToFile(Boards,Moves,infile):
 
 	with open(infile,'a') as f:
@@ -195,7 +197,9 @@ def WriteDataToFile(Boards,Moves,infile):
 			f.write('\r\n')			
 
 		f.write('\r\n')	
-
+#writes data as continues stream of board state and move with direciton
+#each new line is the next state of the board 
+#each game is seperated by an empty line 
 def WriteDataToFileV2(Boards,Moves,infile):
 	with open(infile,'a') as f:
 
@@ -215,6 +219,43 @@ def WriteDataToFileV2(Boards,Moves,infile):
 			f.write('\r\n')
 		f.write('\r\n')
 
+#the start of a game is defined by an empty line followed by a line of data 
+#each game is stored as a 2d array (rows being each time step and column being state of board + move with direction)
+#each game is then stored in a separate array that holds all games for use in batch processing 
+def create_batched_training_data(file):
+	raw_data  = open(file,'r').read() # pull in game data , each game is separated by a blank line 
+
+
+	split_data_by_line = raw_data.split('\r\n') #split raw data by line 
+
+	all_board_data = [] # contains all games board data 
+	all_label_data = [] # contains all games label data ( move + direction)
+	this_game_board_data = [] # contains this game board states 
+	this_game_label = [] # contains this game labels 
+
+	for eachline  in split_data_by_line: 
+		if len(eachline) > 0: #if the length of the line is greater than zero then we are in a game 
+
+			data = eachline.split(',') # the first 33 elements are the board , the last 3 are the move + direction 
+			tempData = [] # store this turns board state as a temp value to be added to the overall game array 
+			tempLabel = []
+			for j in range(0,33): # first 33 elements are board state 
+				tempData.append(data[j])
+				
+			for j in range(33,36): # last 3 elements are labels 
+				tempLabel.append(data[j])
+
+			this_game_board_data.append(tempData) # build up 2d array of game 
+			this_game_label.append(tempLabel)	
+
+		if len(eachline) == 0:	# if a new line is found the game has ended. add game and labels to the overall game array that stores all games.
+			all_board_data.append(this_game_board_data)
+			all_label_data.append(this_game_label)
+			this_game_board_data = [] # reset current game array 
+			this_game_label = []
+
+	return all_board_data , all_label_data
+
 
 
 def training_games():
@@ -224,7 +265,7 @@ def training_games():
 
 	Scores = [] #used for identifying frequency of scores 
 
-	for game in range(0,1000):	# start loop here 
+	for game in range(0,100000):	# start loop here 
 
 		ThisGameMoves = [] #hold an array of all the moves used in a game. write to file if the game was good
 		ThisGameBoard = [] #hold an array of the state of the board per turn. write to file if the game was good
@@ -258,6 +299,8 @@ def training_games():
 
 
 #training_games()
+games, labels = create_batched_training_data('training_dataV2.txt') 
+
 
 
 
