@@ -5,6 +5,7 @@ import random
 from scipy import stats
 import tensorflow as tf 
 
+import numpy as np 
 
 
 
@@ -240,10 +241,10 @@ def create_batched_training_data(file):
 			tempData = [] # store this turns board state as a temp value to be added to the overall game array 
 			tempLabel = []
 			for j in range(0,33): # first 33 elements are board state 
-				tempData.append(data[j])
+				tempData.append(float(data[j]))
 				
 			for j in range(33,36): # last 3 elements are labels 
-				tempLabel.append(data[j])
+				tempLabel.append(float(data[j]))
 
 			this_game_board_data.append(tempData) # build up 2d array of game 
 			this_game_label.append(tempLabel)	
@@ -301,19 +302,28 @@ def training_games():
 #training_games()
 games, labels = create_batched_training_data('training_dataV2.txt') 
 
+input_layer_size = 33
+classes = 73
+
+x = tf.placeholder('float',[None,input_layer_size])
+y = tf.placeholder('float',[None,classes])
+
+def Fully_Connected_Layer(inputs,channels_in ,channels_out, NameScope = ''):
+
+	with tf.name_scope(NameScope):
+		hidden_layer = {'Weights': tf.Variable(tf.random_normal([channels_in,channels_out]),'float'),
+		'Biases' :tf.Variable(tf.random_normal([channels_out]),'float')} 
+
+        action = tf.add(tf.matmul(inputs,hidden_layer['Weights']),hidden_layer['Biases'])
+        action = tf.nn.relu(action)
+        return action 
 
 
+def train_network(x):
+	fc1 = Fully_Connected_Layer(games[0],input_layer_size,200,'hidden_layer_1')
+	fc2 = Fully_Connected_Layer(fc1,200,500,'hidden_layer_2')
+	fc3 = Fully_Connected_Layer(fc2,500,classes,'hidden_layer_3')
 
 
-
-
-
-
-
-
-
-
-
-
-
+train_network(x)
 
