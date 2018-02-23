@@ -3,7 +3,7 @@ from enum import Enum
 import random 
 #import matplotlib.pyplot as plt 
 from scipy import stats
-import tensorflow as tf 
+#import tensorflow as tf 
 
 import numpy as np 
 
@@ -220,10 +220,38 @@ def WriteDataToFileV2(Boards,Moves,infile):
 			f.write('\r\n')
 		f.write('\r\n')
 
+
+
+
+def label_to_one_hot():
+	Board = LoadBoard("board.txt") # load board from file 
+	Coords = GameCoordinates(Board) #find all possible coorindates with a direction where a move can be made. 
+
+	Coords = tuple(Coords) #convert all game moves into array of tuples - cannot use type list in dictionary.  
+
+	coord_to_hot = {}
+	hot_to_coord = {}
+
+	for i in range(0,len(Coords)):
+		#coord_to_hot[tuple(Coords[i])] = i 
+		coord_to_hot[tuple(Coords[i])] = np.eye(len(Coords))[i]
+
+	for i in range(0,len(Coords)):
+		hot_to_coord[i] = Coords[i] 
+
+	return coord_to_hot, hot_to_coord
+
+
+
+
 #the start of a game is defined by an empty line followed by a line of data 
 #each game is stored as a 2d array (rows being each time step and column being state of board + move with direction)
 #each game is then stored in a separate array that holds all games for use in batch processing 
 def create_batched_training_data(file):
+
+
+	Coord_to_one_hot , One_hot_to_Coord = label_to_one_hot()
+
 	raw_data  = open(file,'r').read() # pull in game data , each game is separated by a blank line 
 
 
@@ -244,9 +272,13 @@ def create_batched_training_data(file):
 				tempData.append(float(data[j]))
 				
 			for j in range(33,36): # last 3 elements are labels 
+				#tempLabel.append(float(data[j]))
 				tempLabel.append(float(data[j]))
 
 			this_game_board_data.append(tempData) # build up 2d array of game 
+
+#			print tempLabel
+#			tempLabel = Coord_to_one_hot[tuple(tempLabel)]
 			this_game_label.append(tempLabel)	
 
 		if len(eachline) == 0:	# if a new line is found the game has ended. add game and labels to the overall game array that stores all games.
@@ -296,34 +328,3 @@ def training_games():
 		if game % 5000 == 0:
 			print (game) 
 	#PlotFrequencyDistribution(Scores) #plot the freuency distribution of score of all games played 
-
-
-
-#training_games()
-games, labels = create_batched_training_data('training_dataV2.txt') 
-
-input_layer_size = 33
-classes = 73
-
-x = tf.placeholder('float',[None,input_layer_size])
-y = tf.placeholder('float',[None,classes])
-
-def Fully_Connected_Layer(inputs,channels_in ,channels_out, NameScope = ''):
-
-	with tf.name_scope(NameScope):
-		hidden_layer = {'Weights': tf.Variable(tf.random_normal([channels_in,channels_out]),'float'),
-		'Biases' :tf.Variable(tf.random_normal([channels_out]),'float')} 
-
-        action = tf.add(tf.matmul(inputs,hidden_layer['Weights']),hidden_layer['Biases'])
-        action = tf.nn.relu(action)
-        return action 
-
-
-def train_network(x):
-	fc1 = Fully_Connected_Layer(games[0],input_layer_size,200,'hidden_layer_1')
-	fc2 = Fully_Connected_Layer(fc1,200,500,'hidden_layer_2')
-	fc3 = Fully_Connected_Layer(fc2,500,classes,'hidden_layer_3')
-
-
-train_network(x)
-
