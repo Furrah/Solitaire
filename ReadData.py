@@ -50,7 +50,8 @@ label = np.array(label,dtype = int)           #training game label data
 Board = LoadBoard("board.txt") # load board from file 
 Coords = GameCoordinates(Board) #find all possible coorindates with a direction where a move can be made. 
 
-
+for array in Coords:
+	print array
 
 Coords = tuple(Coords) #convert all game moves into array of tuples 
 
@@ -66,7 +67,7 @@ hot_to_coord = {}
 
 
 for i in range(0,len(Coords)):
-	coord_to_hot[tuple(Coords[i])] = np.eye(73)[i]
+	coord_to_hot[tuple(Coords[i])] = np.eye(76)[i]
 
 
 for i in range(0,len(Coords)):
@@ -76,10 +77,10 @@ for i in range(0,len(Coords)):
 print coord_to_hot[tuple(Coords[20])]
 print hot_to_coord[20]
 
-print coord_to_hot[tuple([2,4,3])]
+#print coord_to_hot[tuple([2,4,3])]
 
-
-
+for number in Coords:
+	print number
 
 # label_to_hot = [] # one hot needs to work the other way round as well. here we take 
 

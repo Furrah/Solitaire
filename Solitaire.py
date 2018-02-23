@@ -47,7 +47,7 @@ def GameCoordinates(BoardArray):
 				if (BoardArray[vertical][horizontal+2] !=2):
 					gamemoves.append([vertical,horizontal,direction.Right.value])
 
-			if (vertical - 2) >0  and BoardArray[vertical][horizontal] != 2:
+			if (vertical - 2) >=0  and BoardArray[vertical][horizontal] != 2:
 				if (BoardArray[vertical-2][horizontal] !=2):			
 					gamemoves.append([vertical,horizontal,direction.Up.value])
 
