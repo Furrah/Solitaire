@@ -2,6 +2,7 @@ import Solitaire
 import tensorflow as tf 
 import numpy as np 
 from sklearn.model_selection import train_test_split
+from tensorflow.contrib import rnn
 
 #training_games()
 games, labels = Solitaire.create_batched_training_data('training_dataV3.txt') 
@@ -16,7 +17,16 @@ classes = 76
 epochs = 10000
 
 time_steps = 33
-n_input = 1 
+n_input = 1
+
+for each_game in train_X:
+    each_game = np.array(each_game)
+    print each_game.shape
+    each_game = each_game.reshape((len(each_game),time_steps,n_input))
+
+    print each_game.shape
+
+
 
 #x = tf.placeholder('float',[None,input_layer_size])
 x = tf.placeholder('float',[None,time_steps,n_input])
@@ -38,6 +48,24 @@ def Fully_Connected_Layer(inputs,channels_in ,channels_out, NameScope = '',activ
         return action 
 
 
+def Recurrent_Layer(inputs):
+    num_units = 128
+    n_classes = 76
+    t_steps = 33
+
+    out_weights=tf.Variable(tf.random_normal([num_units,n_classes]))
+    out_bias=tf.Variable(tf.random_normal([n_classes]))
+
+    inputs=tf.unstack(inputs  ,t_steps,1)
+    lstm_layer=rnn.BasicLSTMCell(num_units,forget_bias=1)
+    outputs,_=rnn.static_rnn(lstm_layer,inputs,dtype="float")
+
+    outputs = tf.matmul(outputs[-1],out_weights)+out_bias
+
+    return outputs 
+
+
+
 def Neural_Network(data):
     fc1 = Fully_Connected_Layer(data,input_layer_size,200,'hidden_layer_1',True)
     fc2 = Fully_Connected_Layer(fc1,200,500,'hidden_layer_2',True)
@@ -49,7 +77,8 @@ def Neural_Network(data):
 
 def train_network(x):
 
-    prediction = Neural_Network(x)
+    #prediction = Neural_Network(x)
+    prediction = Recurrent_Layer(x)
 
     with tf.name_scope('xent'):
         cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = prediction ,labels = y ))
@@ -87,7 +116,7 @@ def train_network(x):
 
                 each_game = np.array(each_game)
 
-
+                each_game = each_game.reshape((len(each_game),time_steps,n_input))
 
                 one_hot_label = []
                 for label in game_label:
