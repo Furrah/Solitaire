@@ -10,6 +10,7 @@ import numpy as np
 
 
 
+
 '''
 enumeration for easy reading of moves 
 '''

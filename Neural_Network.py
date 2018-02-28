@@ -15,28 +15,48 @@ input_layer_size = 33
 classes = 76
 epochs = 10000
 
-time_steps = 33
-n_input = 1 
 
-#x = tf.placeholder('float',[None,input_layer_size])
-x = tf.placeholder('float',[None,time_steps,n_input])
+
+x = tf.placeholder('float',[None,input_layer_size])
 y = tf.placeholder('float',[None,classes])
 
-def Fully_Connected_Layer(inputs,channels_in ,channels_out, NameScope = '',activation = True):
+# def Fully_Connected_Layer(inputs,channels_in ,channels_out, NameScope = '',activation = True):
+
+#     with tf.name_scope(NameScope):
+#         hidden_layer = {'Weights': tf.Variable(tf.random_normal([channels_in,channels_out]),'float',name = 'W'),
+#         'Biases' :tf.Variable(tf.random_normal([channels_out]),'float', name = 'B')} 
+
+#         tf.summary.histogram("weights", hidden_layer['Weights'])
+#         tf.summary.histogram("biases", hidden_layer['Biases'])
+
+#         action = tf.add(tf.matmul(inputs,hidden_layer['Weights']),hidden_layer['Biases'])
+
+#         if activation:
+#             action = tf.nn.sigmoid(action)
+#         return action 
+
+
+def Fully_Connected_Layer(inputs,channels_in ,channels_out, NameScope = '',activation = True, Atype = 'sigmoid'):
 
     with tf.name_scope(NameScope):
-        hidden_layer = {'Weights': tf.Variable(tf.random_normal([channels_in,channels_out]),'float',name = 'W'),
-        'Biases' :tf.Variable(tf.random_normal([channels_out]),'float', name = 'B')} 
 
-        tf.summary.histogram("weights", hidden_layer['Weights'])
-        tf.summary.histogram("biases", hidden_layer['Biases'])
+        w = tf.Variable(tf.random_normal([channels_in, channels_out]),'float',name = 'W')
+        b = tf.Variable(tf.random_normal([channels_out]),'float',name = 'B')
 
-        action = tf.add(tf.matmul(inputs,hidden_layer['Weights']),hidden_layer['Biases'])
+        tf.summary.histogram("weights", w)
+        tf.summary.histogram("biases", b)
+
+        action = tf.add(tf.matmul(inputs, w),b)
 
         if activation:
-            action = tf.nn.sigmoid(action)
-        return action 
 
+            if Atype == 'sigmoid':
+                action = tf.nn.sigmoid(action)
+
+            elif Atype == 'relu':
+                action = tf.nn.relu(action)
+
+        return action 
 
 def Neural_Network(data):
     fc1 = Fully_Connected_Layer(data,input_layer_size,200,'hidden_layer_1',True)

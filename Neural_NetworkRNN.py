@@ -14,17 +14,10 @@ Coord_to_one_hot , One_hot_to_Coord = Solitaire.label_to_one_hot()
 
 input_layer_size = 33
 classes = 76
-epochs = 10000
+epochs = 150
 
-time_steps = 33
-n_input = 1
-
-for each_game in train_X:
-    each_game = np.array(each_game)
-    print each_game.shape
-    each_game = each_game.reshape((len(each_game),time_steps,n_input))
-
-    print each_game.shape
+time_steps = 11
+n_input = 3
 
 
 
@@ -32,37 +25,45 @@ for each_game in train_X:
 x = tf.placeholder('float',[None,time_steps,n_input])
 y = tf.placeholder('float',[None,classes])
 
-def Fully_Connected_Layer(inputs,channels_in ,channels_out, NameScope = '',activation = True):
+def Fully_Connected_Layer(inputs,channels_in ,channels_out, NameScope = '',activation = True, Atype = 'sigmoid'):
 
     with tf.name_scope(NameScope):
-        hidden_layer = {'Weights': tf.Variable(tf.random_normal([channels_in,channels_out]),'float',name = 'W'),
-        'Biases' :tf.Variable(tf.random_normal([channels_out]),'float', name = 'B')} 
 
-        tf.summary.histogram("weights", hidden_layer['Weights'])
-        tf.summary.histogram("biases", hidden_layer['Biases'])
+        w = tf.Variable(tf.random_normal([channels_in, channels_out]),'float',name = 'W')
+        b = tf.Variable(tf.random_normal([channels_out]),'float',name = 'B')
 
-        action = tf.add(tf.matmul(inputs,hidden_layer['Weights']),hidden_layer['Biases'])
+        tf.summary.histogram("weights", w)
+        tf.summary.histogram("biases", b)
+
+        action = tf.add(tf.matmul(inputs, w),b)
 
         if activation:
-            action = tf.nn.sigmoid(action)
+
+            if Atype == 'sigmoid':
+                action = tf.nn.sigmoid(action)
+
+            elif Atype == 'relu':
+                action = tf.nn.relu(action)
+
         return action 
 
 
 def Recurrent_Layer(inputs):
     num_units = 128
     n_classes = 76
-    t_steps = 33
+    t_steps = 11
 
-    out_weights=tf.Variable(tf.random_normal([num_units,n_classes]))
-    out_bias=tf.Variable(tf.random_normal([n_classes]))
+    with tf.name_scope('RNN_Layer'):
+        w=tf.Variable(tf.random_normal([num_units,n_classes]),name = 'W')
+        b=tf.Variable(tf.random_normal([n_classes]),name = 'B')
 
-    inputs=tf.unstack(inputs  ,t_steps,1)
-    lstm_layer=rnn.BasicLSTMCell(num_units,forget_bias=1)
-    outputs,_=rnn.static_rnn(lstm_layer,inputs,dtype="float")
+        inputs=tf.unstack(inputs  ,t_steps,1)
+        lstm_layer=rnn.BasicLSTMCell(num_units,forget_bias=1)
+        outputs,_=rnn.static_rnn(lstm_layer,inputs,dtype="float")
 
-    outputs = tf.matmul(outputs[-1],out_weights)+out_bias
+        outputs = tf.add(tf.matmul(outputs[-1],w),b)
 
-    return outputs 
+        return outputs 
 
 
 
